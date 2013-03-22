@@ -17,5 +17,6 @@ OTHER_FILES += \
 
 LIBS += \
     -lpthread \
+    -lxml2 \
     -lcurl
 

@@ -18,12 +18,6 @@ ThreadPool::ThreadPool()
 
         m_pthreads[i] = pThread;
 
-//        pthread_t thread;
-
-//        pthread_create(&thread, 0, &callback, this);
-
-//        m_pthreads[i] = thread;
-
     }
 }
 

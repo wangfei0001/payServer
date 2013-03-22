@@ -42,23 +42,23 @@ void PaymentServer::start()
 
     }
 
-    pool->run();
+    //pool->run();
     //check socket connection
 
-    struct sockaddr_in clientaddr;
-    unsigned int clientaddrlen = 0;
+//    struct sockaddr_in clientaddr;
+//    unsigned int clientaddrlen = 0;
 
-    while (1){
-           int connectfd = accept(socketfd, (struct sockaddr *) &clientaddr, &clientaddrlen);
-           char buffer[2048];
+//    while (1){
+//           int connectfd = accept(socketfd, (struct sockaddr *) &clientaddr, &clientaddrlen);
+//           char buffer[2048];
 
-           printf("A client has connected %d\n", connectfd);
-           if (recv(connectfd, buffer, sizeof(buffer), 0 ) > 0){
-               printf("Received message: %s\n", buffer);
+//           printf("A client has connected %d\n", connectfd);
+//           if (recv(connectfd, buffer, sizeof(buffer), 0 ) > 0){
+//               printf("Received message: %s\n", buffer);
 
-           }
-           close(connectfd);
-       }
+//           }
+//           close(connectfd);
+//       }
 
 
     close(socketfd);
@@ -91,7 +91,7 @@ int PaymentServer::createListeningSocket()
     memset(&serv_addr, 0, sizeof serv_addr);
 
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(8888);
+    serv_addr.sin_port = htons(6667);
     serv_addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0){
