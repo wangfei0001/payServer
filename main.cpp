@@ -23,7 +23,13 @@ int main()
     server->start();
 
 
+    while(1){
+        sleep(4);
+    }
+
     cout << "Goodbye guys." << endl;
+
+
 
     return 0;
 }
