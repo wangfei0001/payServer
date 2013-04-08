@@ -1,0 +1,30 @@
+<root>
+    <amount>0.01</amount>
+    <order>12345678</order>
+    <payment>
+        <acct>5555555555554444</acct>
+        <cvv2>123</cvv2>
+        <expyear>2013</expyear>
+        <expmonth>12</expmonth>
+    </payment>
+    <billingaddress>
+        <billtocity>Sydney</billtocity>
+        <billtocountry>AU</billtocountry>
+        <billtoemail>wangfei001@hotmail.com</billtoemail>
+        <billtofirstname>fei</billtofirstname>
+        <billtolastname>wang</billtolastname>
+        <billtostate>NSW</billtostate>
+        <billtostreet>2/23 Barry ST</billtostreet>
+        <billtozip>2089</billtozip>
+    </billingaddress>
+    <shippingaddress>
+        <shiptocity>Sydney</shiptocity>
+        <shiptocountry>AU</shiptocountry>
+        <shiptoemail>wangfei001@hotmail.com</shiptoemail>
+        <shiptofirstname>fei</shiptofirstname>
+        <shiptolastname>wang</shiptolastname>
+        <shiptostate>NSW</shiptostate>
+        <shiptostreet>2/23 Barry ST</shiptostreet>
+        <shiptozip>2089</shiptozip>
+    </shippingaddress>
+</root>

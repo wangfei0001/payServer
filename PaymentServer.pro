@@ -1,6 +1,7 @@
 TEMPLATE = app
 CONFIG += console
 CONFIG -= qt
+#CONFIG += debug
 
 SOURCES += main.cpp \
     threadpool.cpp \
@@ -24,8 +25,11 @@ HEADERS += \
     data/authorise.h \
     data/response.h
 
+INCLUDEPATH = /usr/include/libxml2
+
 OTHER_FILES += \
-    Makefile
+    Makefile \
+    request.xml
 
 LIBS += \
     -lpthread \

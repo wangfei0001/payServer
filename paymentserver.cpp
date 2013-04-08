@@ -12,6 +12,11 @@
 
 #include <errno.h>
 
+#include <fstream>
+
+#include <libxml/parser.h>
+
+
 #include "paymentserver.h"
 
 using namespace std;
@@ -31,6 +36,8 @@ PaymentServer::~PaymentServer()
 
     cout << "Delete threads pool!" << endl;
 }
+
+
 
 
 void PaymentServer::start()
@@ -60,12 +67,77 @@ void PaymentServer::start()
 //           close(connectfd);
 //       }
 
+    cout << "hello" << endl;
 
 
+    ifstream myfile("request.xml");
+
+    char *memblock;
+
+    cout << "opened?" << myfile.is_open() << endl;
+
+    myfile.seekg (0, ios::beg);
+    long begin = myfile.tellg();
+    myfile.seekg (0, ios::end);
+    long end = myfile.tellg();
+
+    long size = end - begin;
+
+    memblock = new char[size];
+    cout << "file length=" <<  size << endl;
+    myfile.seekg (0, ios::beg);
+    myfile.read (memblock, size);
+
+    this->parseRequests(memblock, size);
+
+    delete memblock;
+
+    myfile.close();
+
+
+
+    sleep(5000000);
 
     close(socketfd);
 }
 
+static void
+print_element_names(xmlNode * a_node)
+{
+    xmlNode *cur_node = NULL;
+    xmlChar *value = NULL;
+
+    for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
+        if (cur_node->type == XML_ELEMENT_NODE) {
+            printf("node type: Element, name: [%s]\n", cur_node->name);
+        }
+
+        if (cur_node->type == XML_TEXT_NODE) {
+            value = xmlNodeGetContent(cur_node);
+            printf("node type: Element, value: [%s]\n", (char*)value);
+            xmlFreeFunc(value);
+        }
+
+
+        print_element_names(cur_node->children);
+    }
+}
+
+int PaymentServer::parseRequests(char *xml, long size)
+{
+    cout << xml << endl;
+
+    xmlDoc *doc;
+
+    doc = xmlReadMemory(xml,size,"",NULL,0);
+    if (doc == NULL){
+          cout << "error: could not parse file" << endl;
+          return -1;
+    }
+    print_element_names(xmlDocGetRootElement(doc));
+
+    return 0;
+}
 
 int PaymentServer::createListeningSocket()
 {

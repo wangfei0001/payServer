@@ -13,7 +13,7 @@ protected:
 
     int createListeningSocket();
 
-
+    int parseRequests(char *xml, long size);
 
 public:
     PaymentServer();

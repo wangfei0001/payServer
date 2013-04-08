@@ -79,7 +79,7 @@ void *callback(void *obj)
         cout << "start to grab->" << i++ << endl;
 
 
-        paypal->test();
+        //paypal->test();
 
         delete paypal;
 

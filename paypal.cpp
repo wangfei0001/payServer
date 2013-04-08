@@ -36,12 +36,13 @@ void Paypal::test()
 
     char buffer[255];
 
+    srand(time(0));
     sprintf(buffer, "%d", rand());
 
     auth->addParam("amt", "0.01");
     auth->addParam("acct", "5555555555554444");
     auth->addParam("cvv2", "123");
-    auth->addParam("expdate", "201312");
+    auth->addParam("expdate", "122013");
 
     auth->addParam("comment1", buffer);
     auth->addParam("custref", buffer);
@@ -66,7 +67,7 @@ void Paypal::test()
     auth->addParam("shiptostreet","2/23 Barry ST");
     auth->addParam("shiptozip","2089");
 
-
+    cout << auth->toString() << endl;
     this->sendRequest(auth->toString());
 
     delete auth;
