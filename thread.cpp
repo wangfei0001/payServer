@@ -4,6 +4,8 @@
 
 #include "thread.h"
 
+#include "paypal.h"
+
 
 using namespace std;
 
@@ -71,39 +73,23 @@ void *callback(void *obj)
     int i = 0;
     cout << "flag status:" << p->m_stop << endl;
     while(!p->m_stop){
+        Paypal *paypal = new Paypal();
 
-//        CURL *curl;
-//        CURLcode res;
-//        struct curl_slist *headers=NULL; // init to NULL is important
-//        headers = curl_slist_append(headers, "Accept: application/json");
 
         cout << "start to grab->" << i++ << endl;
-//        curl = curl_easy_init();
-//        if(curl) {
-//            //curl_easy_setopt(curl, CURLOPT_URL, "http://web.com/api/json/123");
 
-////            curl_easy_setopt(curl, CURLOPT_URL, "http://web.com/pages/123.html");//this returns entire webpage
-////            curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-////            //curl_easy_setopt(curl, CURLOPT_RETURNTRANSFER, true);
-////            res = curl_easy_perform(curl);
 
-////            if(CURLE_OK == res) {
-////                char *ct;
-////                // ask for the content-type
-////                res = curl_easy_getinfo(curl, CURLINFO_CONTENT_TYPE, &ct);
-////                if((CURLE_OK == res) && ct)
-////                    printf("We received Content-Type: %s\n", ct);
-////            }
-//        }else{
-//            cout << "curl error" << endl;
-//        }
-//        // always cleanup
-//        curl_easy_cleanup(curl);
+        paypal->test();
+
+        delete paypal;
+
         cout << "end!" << endl;
-        //break;
+
         sleep(1);
     }
     cout << "thread end" << endl;
 
     return obj;
 }
+
+
