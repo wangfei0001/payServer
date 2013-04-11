@@ -3,6 +3,8 @@
 
 #include "threadpool.h"
 
+#include "data/authorise.h"
+
 class PaymentServer
 {
 protected:
@@ -13,7 +15,7 @@ protected:
 
     int createListeningSocket();
 
-    int parseRequests(char *xml, long size);
+    int parseRequests(char *xml, long size, Authorise *auth);
 
 public:
     PaymentServer();

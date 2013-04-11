@@ -19,6 +19,8 @@
 
 #include "paymentserver.h"
 
+
+
 using namespace std;
 
 PaymentServer::PaymentServer()
@@ -52,22 +54,29 @@ void PaymentServer::start()
     //pool->run();
     //check socket connection
 
-//    struct sockaddr_in clientaddr;
-//    unsigned int clientaddrlen = 0;
+    struct sockaddr_in clientaddr;
+    unsigned int clientaddrlen = 0;
 
-//    while (1){
-//           int connectfd = accept(socketfd, (struct sockaddr *) &clientaddr, &clientaddrlen);
-//           char buffer[2048];
+    while (1){
+       int connectfd = accept(socketfd, (struct sockaddr *) &clientaddr, &clientaddrlen);
+       char buffer[2048];
 
-//           printf("A client has connected %d\n", connectfd);
-//           if (recv(connectfd, buffer, sizeof(buffer), 0 ) > 0){
-//               printf("Received message: %s\n", buffer);
+       printf("A client has connected %d\n", connectfd);
+       if (recv(connectfd, buffer, sizeof(buffer), 0 ) > 0){
+           printf("Received message: %s\n", buffer);
 
-//           }
-//           close(connectfd);
-//       }
+            //start to parse the xml request;
 
-    cout << "hello" << endl;
+
+       }
+
+
+       close(connectfd);
+   }
+
+
+#if 0
+    Authorise *auth = new Authorise;
 
 
     ifstream myfile("request.xml");
@@ -88,7 +97,7 @@ void PaymentServer::start()
     myfile.seekg (0, ios::beg);
     myfile.read (memblock, size);
 
-    this->parseRequests(memblock, size);
+    this->parseRequests(memblock, size, auth);
 
     delete memblock;
 
@@ -96,45 +105,84 @@ void PaymentServer::start()
 
 
 
+
+    delete auth;
+
+
     sleep(5000000);
+
+#endif
+
 
     close(socketfd);
 }
 
-static void
-print_element_names(xmlNode * a_node)
-{
-    xmlNode *cur_node = NULL;
-    xmlChar *value = NULL;
-
-    for (cur_node = a_node; cur_node; cur_node = cur_node->next) {
-        if (cur_node->type == XML_ELEMENT_NODE) {
-            printf("node type: Element, name: [%s]\n", cur_node->name);
-        }
-
-        if (cur_node->type == XML_TEXT_NODE) {
-            value = xmlNodeGetContent(cur_node);
-            printf("node type: Element, value: [%s]\n", (char*)value);
-            xmlFreeFunc(value);
-        }
 
 
-        print_element_names(cur_node->children);
-    }
-}
-
-int PaymentServer::parseRequests(char *xml, long size)
+/**
+  * Parse xml request, generate the paypal request and red request
+  */
+int PaymentServer::parseRequests(char *xml, long size, Authorise *auth)
 {
     cout << xml << endl;
 
-    xmlDoc *doc;
-
-    doc = xmlReadMemory(xml,size,"",NULL,0);
+    xmlDoc *doc = xmlReadMemory(xml,size,"",NULL,0);
     if (doc == NULL){
           cout << "error: could not parse file" << endl;
           return -1;
     }
-    print_element_names(xmlDocGetRootElement(doc));
+
+    cout << "------------------------" << endl;
+
+    xmlNode *cur_node = xmlDocGetRootElement(doc);
+    if(cur_node == NULL){
+        cout << "error: could not get root element" << endl;
+        return -1;
+    }
+
+    if(!xmlStrcmp(cur_node->name, (const xmlChar *)"root")){    //get root node
+        cur_node = cur_node->xmlChildrenNode;
+
+        while(cur_node){
+            if (cur_node->type == XML_ELEMENT_NODE) {
+                xmlChar *value = NULL;
+
+                if(xmlStrcmp(cur_node->name, (const xmlChar *)"shipping") &&
+                        xmlStrcmp(cur_node->name, (const xmlChar *)"billing") &&
+                        xmlStrcmp(cur_node->name, (const xmlChar *)"payment")
+                        ){
+
+                        value = xmlNodeGetContent(cur_node);
+                        auth->addParam((const char *)cur_node->name, (const char *)value);
+                        xmlFreeFunc(value);
+                }else{
+                    xmlNode *sub_node = cur_node->xmlChildrenNode;
+                    while(sub_node){
+                        if (cur_node->type == XML_ELEMENT_NODE) {
+
+                            string paramName = (char *)sub_node->name;
+
+                            if(!xmlStrcmp(cur_node->name, (const xmlChar *)"shipping"))
+                                paramName = "billto" + paramName;
+                            else if(!xmlStrcmp(cur_node->name, (const xmlChar *)"billing"))
+                                paramName = "shipto" + paramName;
+
+                            value = xmlNodeGetContent(sub_node);
+                            auth->addParam(paramName, (const char *)value);
+                            xmlFreeFunc(value);
+
+                        }
+                        sub_node = sub_node->next;
+                    }
+                }
+            }
+            cur_node = cur_node->next;
+        }
+    }else{
+        return -1;
+    }
+
+    cout << "------------------------" << endl;
 
     return 0;
 }
