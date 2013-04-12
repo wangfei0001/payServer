@@ -31,7 +31,6 @@ int main()
 
     PaymentServer *server = new PaymentServer();
 
-
     server->start();
 
 

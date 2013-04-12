@@ -57,21 +57,43 @@ void PaymentServer::start()
     struct sockaddr_in clientaddr;
     unsigned int clientaddrlen = 0;
 
+//    long count2 = 0;
+
     while (1){
-       int connectfd = accept(socketfd, (struct sockaddr *) &clientaddr, &clientaddrlen);
-       char buffer[2048];
+       unsigned int connectfd = accept(socketfd, (struct sockaddr *) &clientaddr, &clientaddrlen);
+       if(connectfd == -1){
+           cout << "accept error " << endl;
 
-       printf("A client has connected %d\n", connectfd);
-       if (recv(connectfd, buffer, sizeof(buffer), 0 ) > 0){
-           printf("Received message: %s\n", buffer);
-
-            //start to parse the xml request;
-
-
+           exit(0);
        }
 
 
-       close(connectfd);
+       printf("A client has connected %d\n", connectfd);
+
+       thread *p_thread = pool->getSpareThread();
+
+       if(p_thread){
+           cout << "find a spare thread:" << p_thread << " index:" << p_thread->id << endl;
+
+//           count2++;
+
+//           cout << "position2 " << count2 << endl;
+
+           p_thread->socketfd = connectfd;
+
+           p_thread->start();
+
+       }else{
+           cout << "no spare thread is available now. maxinum threads: " << DEFAULT_THREAD_COUNT << endl;
+
+           cout << "fuck" << endl;
+
+
+           sleep(1000);
+       }
+
+//       close(connectfd);
+       usleep(1);
    }
 
 
@@ -93,7 +115,7 @@ void PaymentServer::start()
     long size = end - begin;
 
     memblock = new char[size];
-    cout << "file length=" <<  size << endl;
+//    cout << "file length=" <<  size << endl;
     myfile.seekg (0, ios::beg);
     myfile.read (memblock, size);
 
@@ -213,7 +235,7 @@ int PaymentServer::createListeningSocket()
     memset(&serv_addr, 0, sizeof serv_addr);
 
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(6667);
+    serv_addr.sin_port = htons(6666);
     serv_addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0){

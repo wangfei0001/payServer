@@ -1,5 +1,6 @@
 #include <cstdlib>
 
+#include <stdio.h>
 
 
 #include "threadpool.h"
@@ -11,13 +12,23 @@ ThreadPool::ThreadPool()
 {
     m_threads = DEFAULT_THREAD_COUNT;
 
-    m_pthreads = new thread*[100];
+    m_pthreads = new thread*[DEFAULT_THREAD_COUNT];
 
     for(int i = 0; i < m_threads; i++){
         thread *pThread = new thread();
 
-        m_pthreads[i] = pThread;
+        pThread->id = i;
 
+        if(!pThread->init()){
+
+            m_pthreads[i] = pThread;
+
+            printf("create thread: %d\n", i);
+        }else{
+            m_pthreads[i] = NULL;
+
+            delete pThread;
+        }
     }
 }
 
@@ -28,7 +39,7 @@ void ThreadPool::run()
     for(int i = 0; i < m_threads; i++){
         thread *pThread = m_pthreads[i];
 
-        pThread->start();
+        if(pThread) pThread->start();
     }
 }
 
@@ -42,7 +53,7 @@ thread * ThreadPool::getSpareThread()
     for(int i = 0; i < m_threads; i++){
         thread *pThread = m_pthreads[i];
 
-        if(pThread->isAvailable()){
+        if(pThread && pThread->isAvailable()){
 
             returnThread = pThread;
 

@@ -5,6 +5,8 @@
 #include <pthread.h>
 
 
+
+
 class thread
 {
 protected:
@@ -12,10 +14,26 @@ protected:
 
     pthread_t m_pthread;
 
+    pthread_mutex_t mutex;
+
+    pthread_cond_t cond;
+
+
+
+    static void *callback(void *obj);
+
 public:
+
+
     thread();
 
     ~thread();
+
+    int init();
+
+    unsigned int socketfd;
+
+    int id;
 
     bool m_stop;
 
@@ -26,6 +44,10 @@ public:
     bool stop();
 
     bool pause();
+
+//    void setSocket(unsigned int *p_socket);
+
+
 };
 
 #endif // THREAD_H
