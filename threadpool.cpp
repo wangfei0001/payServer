@@ -8,6 +8,8 @@
 
 #include "threadpool.h"
 
+#include "workerthread.h"
+
 
 ThreadPool::ThreadPool()
 {
@@ -31,6 +33,9 @@ ThreadPool::ThreadPool()
             delete pThread;
         }
     }
+    workerthread *worker = new workerthread();
+
+    worker->init(this);
 }
 
 

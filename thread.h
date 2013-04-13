@@ -39,11 +39,15 @@ public:
 
     bool isAvailable();
 
-    bool start();
+    bool start(int socketfd);
 
     bool stop();
 
     bool pause();
+
+    void process();
+
+    void setAvailable(bool available);
 
 //    void setSocket(unsigned int *p_socket);
 

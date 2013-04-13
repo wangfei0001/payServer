@@ -54,10 +54,6 @@ void PaymentServer::start()
 
     }
 
-    workerthread *worker = new workerthread();
-
-    worker->init(pool);
-
 
     //check socket connection
 
@@ -71,6 +67,7 @@ void PaymentServer::start()
        if(connectfd == -1){
            cout << "accept error " << endl;
            //error handle function!
+           exit(-1);
        }else{
 //           printf("A client has connected %d\n", connectfd);
 
@@ -79,18 +76,15 @@ void PaymentServer::start()
            if(p_thread){
 //               cout << "find a spare thread:" << p_thread << " index:" << p_thread->id << endl;
 
-               p_thread->socketfd = connectfd;
-
-               p_thread->start();
+               p_thread->start(connectfd);
 
            }else{
-               cout << "no spare thread is available now. maxinum threads: " << DEFAULT_THREAD_COUNT << endl;
-
                request_node rnode;
                rnode.socketfd = connectfd;
                request_queue->addRequestNode(rnode);
 
-               cout << "have " << request_queue->count() << " nodes" << endl;
+               cout << "no spare thread is available now. have " << request_queue->count() << " nodes Threads:" << DEFAULT_THREAD_COUNT << endl;
+
            }
        }
 

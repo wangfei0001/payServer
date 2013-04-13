@@ -10,11 +10,15 @@
 
 #include "paypal.h"
 
+#include "rqueue.h"
+
 
 using namespace std;
 
 long m_request_count = 0;
 
+
+extern rqueue *request_queue;
 
 thread::thread()
 {
@@ -27,13 +31,20 @@ thread::thread()
     //pthread_attr_init(&attr);
     /* We don't need to join this thread */
     //pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
-    pthread_mutex_init(&mutex, NULL);
 
-    pthread_cond_init(&cond, NULL);
+    //pthread_mutex_init(&mutex, NULL);
+
+    //pthread_cond_init(&cond, NULL);
+
+
+    mutex = PTHREAD_MUTEX_INITIALIZER;
+
+    cond = PTHREAD_COND_INITIALIZER;
+
 
     socketfd = -1;
 
-    pthread_mutex_lock( &mutex );
+//    pthread_mutex_lock( &mutex );
     //pthread_attr_destroy(&attr);
 }
 
@@ -56,23 +67,38 @@ int thread::init()
 
 bool thread::isAvailable()
 {
-    return m_isAvailable;
-}
+    bool available;
 
+    pthread_mutex_lock( &mutex );
 
-bool thread::start()
-{
-//    pthread_mutex_lock( &mutex );
-    this->m_isAvailable = false;
+    available = m_isAvailable;
+
     pthread_mutex_unlock( &mutex );
 
-//    cout << "signal to thread " << this->id << endl;
+    return available;
+}
+
+void thread::setAvailable(bool available)
+{
+    m_isAvailable = available;
+}
+
+bool thread::start(int socketfd)
+{
+
+    pthread_mutex_lock( &mutex );
+
+    m_isAvailable = false;
+
+    this->socketfd = socketfd;
+
     if( pthread_cond_signal(&cond) != 0){
 
         perror("pthread_cond_signal() error");
         //exit(0);
-
     }
+
+    pthread_mutex_unlock( &mutex );
 
     return true;
 }
@@ -80,8 +106,6 @@ bool thread::start()
 
 bool thread::stop()
 {
-
-
     return true;
 }
 
@@ -91,10 +115,36 @@ bool thread::pause()
     return true;
 }
 
-//void thread::setSocket(unsigned int *p_socket)
-//{
-//    p_socketfd = p_socket;
-//}
+
+void thread::process()
+{
+    char buffer[2048];
+
+    cout << "command count: " << ++m_request_count << endl;
+
+    if (recv(socketfd, buffer, sizeof(buffer), 0 ) > 0){
+       //printf("Received message: %s\n", buffer);
+
+        //start to parse the xml request;
+
+
+       sprintf(buffer, "ok");
+
+       send(socketfd, buffer, 3, 0);
+
+    }else{
+        cout << errno << endl;
+        cout << "recv error detected" << endl;
+    }
+
+
+    if(socketfd != -1){
+        close(socketfd);
+        socketfd = -1;
+    }
+    m_isAvailable = true;
+}
+
 
 //work function, thread
 
@@ -105,43 +155,35 @@ void *thread::callback(void *obj)
     while(!p->m_stop){
         pthread_mutex_lock( &p->mutex );
 
-//        pthread_cond_wait (&p->cond, &p->mutex);
+        while(p->socketfd == -1){
+            pthread_cond_wait (&p->cond, &p->mutex);
+        }
 
-//        p->m_isAvailable = false;
+        pthread_mutex_unlock( &p->mutex );
 
 //        cout << "!thread start>" << endl;
 
-        char buffer[2048];
-
-        cout << "command count: " << m_request_count << endl;
-
-        m_request_count++;
-        if (recv(p->socketfd, buffer, sizeof(buffer), 0 ) > 0){
-           //printf("Received message: %s\n", buffer);
+        p->process();
 
 
+//        while(!request_queue->isEmpty()){
+//            request_node node = request_queue->getAndRemoveRequestNode();
 
-           //sleep(10);
+//            pthread_mutex_lock( &p->mutex );
 
-            //start to parse the xml request;
+//            p->setAvailable(false);
 
+//            p->socketfd = node.socketfd;
 
-           sprintf(buffer, "ok");
+//            pthread_mutex_unlock( &p->mutex );
 
-           send(p->socketfd, buffer, 3, 0);
+//            p->process();
 
-        }else{
-            cout << errno << endl;
-            cout << "recv error detected" << endl;
-        }
+//            cout << request_queue->count() << " left" << endl;
 
+//            break;
+//        }
 
-        if(p->socketfd != -1){
-            close(p->socketfd);
-            p->socketfd = -1;
-        }
-        p->m_isAvailable = true;
-//        pthread_mutex_unlock( &p->mutex );
 
         usleep(1);
     }

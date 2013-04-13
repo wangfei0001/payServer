@@ -33,7 +33,7 @@ void *workerthread::callback(void *obj)
 {
     ThreadPool *pool = (ThreadPool *)obj;
 
-//    sleep(10);
+//    sleep(5);
     while(true){
         if(request_queue->count() > 0){
             request_node node;
@@ -44,13 +44,9 @@ void *workerthread::callback(void *obj)
                 if(p_thread){
                     node = request_queue->getAndRemoveRequestNode();
 
-                    cout << "find a spare thread for workder:" << p_thread << " index:" << p_thread->id << endl;
+//                    cout << "find a spare thread for workder:" << p_thread << " index:" << p_thread->id << endl;
 
-                    p_thread->socketfd = node.socketfd;
-
-                    p_thread->start();
-
-                    //request_queue->popRequestNode();
+                    p_thread->start(node.socketfd);
 
                     cout << request_queue->count() << " left" << endl;
                 }
