@@ -2,11 +2,12 @@
 
 #include <stdio.h>
 
+#include <errno.h>
+
+#include <error.h>
 
 #include "threadpool.h"
 
-
-void *callback(void* obj);
 
 ThreadPool::ThreadPool()
 {
@@ -23,7 +24,7 @@ ThreadPool::ThreadPool()
 
             m_pthreads[i] = pThread;
 
-            printf("create thread: %d\n", i);
+            printf("create thread: %d %p\n", i, pThread);
         }else{
             m_pthreads[i] = NULL;
 
@@ -33,15 +34,14 @@ ThreadPool::ThreadPool()
 }
 
 
-void ThreadPool::run()
-{
+//void ThreadPool::run()
+//{
+//    for(int i = 0; i < m_threads; i++){
+//        thread *pThread = m_pthreads[i];
 
-    for(int i = 0; i < m_threads; i++){
-        thread *pThread = m_pthreads[i];
-
-        if(pThread) pThread->start();
-    }
-}
+//        if(pThread) pThread->start();
+//    }
+//}
 
 
 /* Get Spare thread */

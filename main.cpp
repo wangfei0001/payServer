@@ -8,12 +8,47 @@
 
 using namespace std;
 
-
+#include "rqueue.h"
 
 
 
 int main()
 {
+
+#if 0
+    rqueue queue;
+
+    request_node node1;
+    node1.socketfd = 0;
+
+    request_node node2;
+    node2.socketfd = 1;
+
+    request_node node3;
+    node3.socketfd = 2;
+
+
+    queue.addRequestNode(node1);
+
+    queue.addRequestNode(node2);
+    queue.addRequestNode(node3);
+
+
+    while(!queue.isEmpty()){
+        request_node node = queue.getAndRemoveRequestNode();
+
+        cout << "->" << node.socketfd << endl;
+    }
+
+    cout << queue.count() << " left" << endl;
+
+
+    return 0;
+#endif
+
+
+
+
 
 #if 0
 

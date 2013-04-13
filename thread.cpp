@@ -33,7 +33,7 @@ thread::thread()
 
     socketfd = -1;
 
-
+    pthread_mutex_lock( &mutex );
     //pthread_attr_destroy(&attr);
 }
 
@@ -62,7 +62,7 @@ bool thread::isAvailable()
 
 bool thread::start()
 {
-    pthread_mutex_lock( &mutex );
+//    pthread_mutex_lock( &mutex );
     this->m_isAvailable = false;
     pthread_mutex_unlock( &mutex );
 
@@ -103,12 +103,9 @@ void *thread::callback(void *obj)
     thread *p = (thread *)obj;
 
     while(!p->m_stop){
-
-//        cout << "waitting for condition..." << p->id << endl;
-
         pthread_mutex_lock( &p->mutex );
 
-        pthread_cond_wait (&p->cond, &p->mutex);
+//        pthread_cond_wait (&p->cond, &p->mutex);
 
 //        p->m_isAvailable = false;
 
@@ -116,20 +113,17 @@ void *thread::callback(void *obj)
 
         char buffer[2048];
 
+        cout << "command count: " << m_request_count << endl;
 
+        m_request_count++;
         if (recv(p->socketfd, buffer, sizeof(buffer), 0 ) > 0){
            //printf("Received message: %s\n", buffer);
 
-           cout << "command count: " << m_request_count << endl;
 
-           m_request_count++;
 
-           sleep(10);
+           //sleep(10);
 
             //start to parse the xml request;
-
-
-
 
 
            sprintf(buffer, "ok");
@@ -142,16 +136,12 @@ void *thread::callback(void *obj)
         }
 
 
-//        cout << "!thread end" << endl;
-
         if(p->socketfd != -1){
             close(p->socketfd);
             p->socketfd = -1;
         }
         p->m_isAvailable = true;
-        pthread_mutex_unlock( &p->mutex );
-
-
+//        pthread_mutex_unlock( &p->mutex );
 
         usleep(1);
     }

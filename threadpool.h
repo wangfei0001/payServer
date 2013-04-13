@@ -5,7 +5,7 @@
 
 #include "thread.h"
 
-#define DEFAULT_THREAD_COUNT 100
+#define DEFAULT_THREAD_COUNT 1
 
 class ThreadPool
 {
@@ -16,7 +16,6 @@ protected:
 
     thread **m_pthreads;
 
-
 public:
     ThreadPool();
     ~ThreadPool();
@@ -26,7 +25,7 @@ public:
 
     int getThreadsCount();
 
-    void run();
+//    void run();
 
 };
 

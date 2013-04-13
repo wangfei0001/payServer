@@ -16,12 +16,16 @@
 
 #include <libxml/parser.h>
 
+#include "workerthread.h"
 
 #include "paymentserver.h"
 
+#include "rqueue.h"
 
 
 using namespace std;
+
+rqueue *request_queue = new rqueue();
 
 PaymentServer::PaymentServer()
 {
@@ -41,7 +45,6 @@ PaymentServer::~PaymentServer()
 
 
 
-
 void PaymentServer::start()
 {
     //lisging socket
@@ -51,45 +54,44 @@ void PaymentServer::start()
 
     }
 
-    //pool->run();
+    workerthread *worker = new workerthread();
+
+    worker->init(pool);
+
+
     //check socket connection
 
     struct sockaddr_in clientaddr;
     unsigned int clientaddrlen = 0;
 
-//    long count2 = 0;
+    long count2 = 0;
 
     while (1){
        unsigned int connectfd = accept(socketfd, (struct sockaddr *) &clientaddr, &clientaddrlen);
        if(connectfd == -1){
            cout << "accept error " << endl;
-
-           exit(0);
-       }
-
-
-       printf("A client has connected %d\n", connectfd);
-
-       thread *p_thread = pool->getSpareThread();
-
-       if(p_thread){
-           cout << "find a spare thread:" << p_thread << " index:" << p_thread->id << endl;
-
-//           count2++;
-
-//           cout << "position2 " << count2 << endl;
-
-           p_thread->socketfd = connectfd;
-
-           p_thread->start();
-
+           //error handle function!
        }else{
-           cout << "no spare thread is available now. maxinum threads: " << DEFAULT_THREAD_COUNT << endl;
+//           printf("A client has connected %d\n", connectfd);
 
-           cout << "fuck" << endl;
+           thread *p_thread = pool->getSpareThread();
 
+           if(p_thread){
+//               cout << "find a spare thread:" << p_thread << " index:" << p_thread->id << endl;
 
-           sleep(1000);
+               p_thread->socketfd = connectfd;
+
+               p_thread->start();
+
+           }else{
+               cout << "no spare thread is available now. maxinum threads: " << DEFAULT_THREAD_COUNT << endl;
+
+               request_node rnode;
+               rnode.socketfd = connectfd;
+               request_queue->addRequestNode(rnode);
+
+               cout << "have " << request_queue->count() << " nodes" << endl;
+           }
        }
 
 //       close(connectfd);

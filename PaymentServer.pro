@@ -11,7 +11,9 @@ SOURCES += main.cpp \
     md5/md5.c \
     data/param.cpp \
     data/authorise.cpp \
-    data/response.cpp
+    data/response.cpp \
+    rqueue.cpp \
+    workerthread.cpp
 
 HEADERS += \
     threadpool.h \
@@ -23,7 +25,12 @@ HEADERS += \
     md5/conf.h \
     data/param.h \
     data/authorise.h \
-    data/response.h
+    data/response.h \
+    data/response.h \
+    data/param.h \
+    data/authorise.h \
+    rqueue.h \
+    workerthread.h
 
 INCLUDEPATH = /usr/include/libxml2
 
