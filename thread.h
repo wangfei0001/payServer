@@ -4,7 +4,7 @@
 
 #include <pthread.h>
 
-
+#include "data/authorise.h"
 
 
 class thread
@@ -21,6 +21,8 @@ protected:
 
 
     static void *callback(void *obj);
+
+    int parseRequests(char *xml, long size, Authorise *auth);
 
 public:
 

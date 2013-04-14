@@ -2,7 +2,11 @@
 
 #include <curl/curl.h>
 
+#include <libxml/parser.h>
+
 #include <errno.h>
+
+#include <string.h>
 
 #include <error.h>
 
@@ -122,10 +126,24 @@ void thread::process()
 
     cout << "command count: " << ++m_request_count << endl;
 
-    if (recv(socketfd, buffer, sizeof(buffer), 0 ) > 0){
+    int length = recv(socketfd, buffer, sizeof(buffer), 0 );
+    if (length > 0){
        //printf("Received message: %s\n", buffer);
 
         //start to parse the xml request;
+
+        Authorise *auth = new Authorise;
+
+        this->parseRequests(buffer, length, auth);
+
+
+        Paypal paypal;
+
+        //paypal.sendRequest(auth->toString());
+
+
+
+        delete auth;
 
 
        sprintf(buffer, "ok");
@@ -145,6 +163,100 @@ void thread::process()
     m_isAvailable = true;
 }
 
+
+/**
+  * Parse xml request, generate the paypal request and red request
+  */
+int thread::parseRequests(char *xml, long size, Authorise *auth)
+{
+    cout << xml << endl;
+
+    xmlDoc *doc = xmlReadMemory(xml,size,"",NULL,0);
+    if (doc == NULL){
+          cout << "error: could not parse file" << endl;
+          return -1;
+    }
+
+    cout << "------------------------" << endl;
+
+    xmlNode *cur_node = xmlDocGetRootElement(doc);
+    if(cur_node == NULL){
+        cout << "error: could not get root element" << endl;
+        return -1;
+    }
+
+    if(!xmlStrcmp(cur_node->name, (const xmlChar *)"root")){    //get root node
+        cur_node = cur_node->xmlChildrenNode;
+
+        string expyear, expmonth;
+
+        while(cur_node){
+            if (cur_node->type == XML_ELEMENT_NODE) {
+                xmlChar *value = NULL;
+
+                if(xmlStrcmp(cur_node->name, (const xmlChar *)"shipping") &&
+                        xmlStrcmp(cur_node->name, (const xmlChar *)"billing") &&
+                        xmlStrcmp(cur_node->name, (const xmlChar *)"payment")
+                        ){
+                        value = xmlNodeGetContent(cur_node);
+                        char *fieldName = NULL;
+
+                        if(!xmlStrcmp(cur_node->name, (const xmlChar *)"amount")){
+                            fieldName = "amt";
+                        }else{
+                            fieldName = (char *)cur_node->name;
+                        }
+
+                        if(fieldName) auth->addParam((const char *)fieldName, (const char *)value);
+                        xmlFreeFunc(value);
+                }else{
+                    xmlNode *sub_node = cur_node->xmlChildrenNode;
+                    while(sub_node){
+                        if (cur_node->type == XML_ELEMENT_NODE) {
+                            char *fieldName = NULL;
+
+                            string paramName = (char *)sub_node->name;
+
+                            value = xmlNodeGetContent(sub_node);
+
+                            if(!xmlStrcmp(cur_node->name, (const xmlChar *)"shipping")){
+                                paramName = "billto" + paramName;
+                                fieldName = (char *)paramName.c_str();
+                            }else if(!xmlStrcmp(cur_node->name, (const xmlChar *)"billing")){
+                                paramName = "shipto" + paramName;
+                                fieldName = (char *)paramName.c_str();
+                            }else if(!xmlStrcmp(cur_node->name, (const xmlChar *)"payment")){
+                                if(!xmlStrcmp(sub_node->name, (const xmlChar *)"expyear")){
+                                    expyear = (char *)value;
+                                    fieldName = NULL;
+                                }else if(!xmlStrcmp(sub_node->name, (const xmlChar *)"expmonth")){
+                                     expmonth = (char *)value;
+                                     fieldName = NULL;
+                                }else{
+                                     fieldName = (char *)sub_node->name;
+                                }
+                            }
+
+
+                            if(fieldName)  auth->addParam(paramName, (const char *)value);
+                            xmlFreeFunc(value);
+
+                        }
+                        sub_node = sub_node->next;
+                    }
+                }
+            }
+            cur_node = cur_node->next;
+        }
+        char expdate[32];
+        sprintf(expdate, "%s%s", expmonth.c_str(), expyear.c_str());
+        auth->addParam("expdate", expdate);
+    }else{
+        return -1;
+    }
+
+    return 0;
+}
 
 //work function, thread
 

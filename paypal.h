@@ -18,9 +18,9 @@ public:
 
     void test();
 
-
-protected:
     Response *sendRequest(string param);
+protected:
+
 
     string certificationId;
 

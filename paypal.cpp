@@ -121,7 +121,8 @@ Response *Paypal::sendRequest(string param)
 
         if(CURLE_OK == res) {
 
-            cout << readBuffer << endl;
+            cout << "->" << param.c_str() << endl;
+            cout << "<-" << readBuffer << endl;
         }else{
 
             cout << curl_easy_strerror(res) << endl;

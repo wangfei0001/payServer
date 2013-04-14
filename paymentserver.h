@@ -15,8 +15,6 @@ protected:
 
     int createListeningSocket();
 
-    int parseRequests(char *xml, long size, Authorise *auth);
-
 public:
     PaymentServer();
 

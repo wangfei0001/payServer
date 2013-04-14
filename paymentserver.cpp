@@ -47,6 +47,43 @@ PaymentServer::~PaymentServer()
 
 void PaymentServer::start()
 {
+
+#if 0
+    Authorise *auth = new Authorise;
+
+
+    ifstream myfile("request.xml");
+
+    char *memblock;
+
+    cout << "opened?" << myfile.is_open() << endl;
+
+    myfile.seekg (0, ios::beg);
+    long begin = myfile.tellg();
+    myfile.seekg (0, ios::end);
+    long end = myfile.tellg();
+
+    long size = end - begin;
+
+    memblock = new char[size];
+//    cout << "file length=" <<  size << endl;
+    myfile.seekg (0, ios::beg);
+    myfile.read (memblock, size);
+
+    this->parseRequests(memblock, size, auth);
+
+    delete memblock;
+
+    myfile.close();
+
+
+    delete auth;
+
+
+    sleep(5000000);
+
+#endif
+
     //lisging socket
     socketfd = this->createListeningSocket();
     if(!socketfd){
@@ -93,117 +130,13 @@ void PaymentServer::start()
    }
 
 
-#if 0
-    Authorise *auth = new Authorise;
 
-
-    ifstream myfile("request.xml");
-
-    char *memblock;
-
-    cout << "opened?" << myfile.is_open() << endl;
-
-    myfile.seekg (0, ios::beg);
-    long begin = myfile.tellg();
-    myfile.seekg (0, ios::end);
-    long end = myfile.tellg();
-
-    long size = end - begin;
-
-    memblock = new char[size];
-//    cout << "file length=" <<  size << endl;
-    myfile.seekg (0, ios::beg);
-    myfile.read (memblock, size);
-
-    this->parseRequests(memblock, size, auth);
-
-    delete memblock;
-
-    myfile.close();
-
-
-
-
-    delete auth;
-
-
-    sleep(5000000);
-
-#endif
 
 
     close(socketfd);
 }
 
 
-
-/**
-  * Parse xml request, generate the paypal request and red request
-  */
-int PaymentServer::parseRequests(char *xml, long size, Authorise *auth)
-{
-    cout << xml << endl;
-
-    xmlDoc *doc = xmlReadMemory(xml,size,"",NULL,0);
-    if (doc == NULL){
-          cout << "error: could not parse file" << endl;
-          return -1;
-    }
-
-    cout << "------------------------" << endl;
-
-    xmlNode *cur_node = xmlDocGetRootElement(doc);
-    if(cur_node == NULL){
-        cout << "error: could not get root element" << endl;
-        return -1;
-    }
-
-    if(!xmlStrcmp(cur_node->name, (const xmlChar *)"root")){    //get root node
-        cur_node = cur_node->xmlChildrenNode;
-
-        while(cur_node){
-            if (cur_node->type == XML_ELEMENT_NODE) {
-                xmlChar *value = NULL;
-
-                if(xmlStrcmp(cur_node->name, (const xmlChar *)"shipping") &&
-                        xmlStrcmp(cur_node->name, (const xmlChar *)"billing") &&
-                        xmlStrcmp(cur_node->name, (const xmlChar *)"payment")
-                        ){
-
-                        value = xmlNodeGetContent(cur_node);
-                        auth->addParam((const char *)cur_node->name, (const char *)value);
-                        xmlFreeFunc(value);
-                }else{
-                    xmlNode *sub_node = cur_node->xmlChildrenNode;
-                    while(sub_node){
-                        if (cur_node->type == XML_ELEMENT_NODE) {
-
-                            string paramName = (char *)sub_node->name;
-
-                            if(!xmlStrcmp(cur_node->name, (const xmlChar *)"shipping"))
-                                paramName = "billto" + paramName;
-                            else if(!xmlStrcmp(cur_node->name, (const xmlChar *)"billing"))
-                                paramName = "shipto" + paramName;
-
-                            value = xmlNodeGetContent(sub_node);
-                            auth->addParam(paramName, (const char *)value);
-                            xmlFreeFunc(value);
-
-                        }
-                        sub_node = sub_node->next;
-                    }
-                }
-            }
-            cur_node = cur_node->next;
-        }
-    }else{
-        return -1;
-    }
-
-    cout << "------------------------" << endl;
-
-    return 0;
-}
 
 int PaymentServer::createListeningSocket()
 {
