@@ -139,7 +139,7 @@ void thread::process()
 
         Paypal paypal;
 
-        //paypal.sendRequest(auth->toString());
+        paypal.sendRequest(auth->toString());
 
 
 

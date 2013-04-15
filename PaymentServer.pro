@@ -13,7 +13,8 @@ SOURCES += main.cpp \
     data/authorise.cpp \
     data/response.cpp \
     rqueue.cpp \
-    workerthread.cpp
+    workerthread.cpp \
+    data/redparam.cpp
 
 HEADERS += \
     threadpool.h \
@@ -30,7 +31,8 @@ HEADERS += \
     data/param.h \
     data/authorise.h \
     rqueue.h \
-    workerthread.h
+    workerthread.h \
+    data/redparam.h
 
 INCLUDEPATH = /usr/include/libxml2
 

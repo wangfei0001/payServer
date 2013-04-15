@@ -10,10 +10,23 @@ using namespace std;
 
 #include "rqueue.h"
 
-
+#include "data/redparam.h"
 
 int main()
 {
+
+#if 1
+
+    RedParam r;
+
+
+
+    cout << r.toString() << endl;
+
+    return 0;
+
+#endif
+
 
 #if 0
     rqueue queue;
