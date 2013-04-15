@@ -3,6 +3,10 @@
 
 #include <string>
 
+#include <iostream>
+
+#include <stdio.h>
+
 #include <vector>
 
 
@@ -18,7 +22,6 @@ struct paramNode{
 
 class Param
 {
-
 
 
 protected:

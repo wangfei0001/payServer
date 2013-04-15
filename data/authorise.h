@@ -1,9 +1,9 @@
 #ifndef AUTHORISE_H
 #define AUTHORISE_H
 
-#include "param.h"
+#include "paypalparam.h"
 
-class Authorise : public Param
+class Authorise : public PaypalParam
 {
 public:
     Authorise();

@@ -15,7 +15,7 @@ using namespace std;
 int main()
 {
 
-#if 1
+#if 0
 
     RedParam r;
 
