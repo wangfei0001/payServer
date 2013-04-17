@@ -49,11 +49,6 @@ public:
 
     void process();
 
-    void setAvailable(bool available);
-
-//    void setSocket(unsigned int *p_socket);
-
-
 };
 
 #endif // THREAD_H

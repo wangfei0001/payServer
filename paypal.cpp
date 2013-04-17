@@ -11,6 +11,7 @@
 #include "data/authorise.h"
 
 
+
 extern "C"{
     #include "md5/md5.h"
 }
@@ -30,48 +31,48 @@ Paypal::Paypal()
 }
 
 
-void Paypal::test()
-{
-    Authorise *auth = new Authorise();
+//void Paypal::test()
+//{
+//    Authorise *auth = new Authorise();
 
-    char buffer[255];
+//    char buffer[255];
 
-    srand(time(0));
-    sprintf(buffer, "%d", rand());
+//    srand(time(0));
+//    sprintf(buffer, "%d", rand());
 
-    auth->addParam("amt", "0.01");
-    auth->addParam("acct", "5555555555554444");
-    auth->addParam("cvv2", "123");
-    auth->addParam("expdate", "122013");
+//    auth->addParam("amt", "0.01");
+//    auth->addParam("acct", "5555555555554444");
+//    auth->addParam("cvv2", "123");
+//    auth->addParam("expdate", "122013");
 
-    auth->addParam("comment1", buffer);
-    auth->addParam("custref", buffer);
-    auth->addParam("orderid", buffer);
+//    auth->addParam("comment1", buffer);
+//    auth->addParam("custref", buffer);
+//    auth->addParam("orderid", buffer);
 
-    auth->addParam("billtocity","Sydney");
-    auth->addParam("billtocountry","AU");
-    auth->addParam("billtoemail","wangfei001@hotmail.com");
-    auth->addParam("billtofirstname","fei");
-    auth->addParam("billtolastname","wang");
-    auth->addParam("billtostate","NSW");
-    auth->addParam("billtostreet","2/23 Barry ST");
-    auth->addParam("billtozip","2089");
+//    auth->addParam("billtocity","Sydney");
+//    auth->addParam("billtocountry","AU");
+//    auth->addParam("billtoemail","wangfei001@hotmail.com");
+//    auth->addParam("billtofirstname","fei");
+//    auth->addParam("billtolastname","wang");
+//    auth->addParam("billtostate","NSW");
+//    auth->addParam("billtostreet","2/23 Barry ST");
+//    auth->addParam("billtozip","2089");
 
 
-    auth->addParam("shiptocity","Sydney");
-    auth->addParam("shiptocountry","AU");
-    auth->addParam("shiptoemail","wangfei001@hotmail.com");
-    auth->addParam("shiptofirstname","fei");
-    auth->addParam("shiptolastname","wang");
-    auth->addParam("shiptostate","NSW");
-    auth->addParam("shiptostreet","2/23 Barry ST");
-    auth->addParam("shiptozip","2089");
+//    auth->addParam("shiptocity","Sydney");
+//    auth->addParam("shiptocountry","AU");
+//    auth->addParam("shiptoemail","wangfei001@hotmail.com");
+//    auth->addParam("shiptofirstname","fei");
+//    auth->addParam("shiptolastname","wang");
+//    auth->addParam("shiptostate","NSW");
+//    auth->addParam("shiptostreet","2/23 Barry ST");
+//    auth->addParam("shiptozip","2089");
 
-    cout << auth->toString() << endl;
-    this->sendRequest(auth->toString());
+//    cout << auth->toString() << endl;
+//    this->sendRequest(auth->toString());
 
-    delete auth;
-}
+//    delete auth;
+//}
 
 
 
@@ -116,7 +117,10 @@ Response *Paypal::sendRequest(string param)
         curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback_func);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, &readBuffer);
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-//        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+        curl_easy_setopt(curl, CURLOPT_DNS_USE_GLOBAL_CACHE, 0);
+        curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
+        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+
         res = curl_easy_perform(curl);
 
         if(CURLE_OK == res) {
@@ -128,9 +132,9 @@ Response *Paypal::sendRequest(string param)
             cout << curl_easy_strerror(res) << endl;
         }
 
-        curl_easy_cleanup(curl);
-
         curl_slist_free_all(headers);
+
+        curl_easy_cleanup(curl);
     }
     return (Response *)0;
 }
@@ -169,8 +173,6 @@ void Paypal::getHeader(struct curl_slist **pheaders)
 {
     struct curl_slist *headers = *pheaders;
 
-    char buffer[1000];
-
     string requestIdStr = this->RandomString(10);
 
     requestIdStr = this->MD5(requestIdStr);
@@ -183,11 +185,9 @@ void Paypal::getHeader(struct curl_slist **pheaders)
     headers = curl_slist_append(headers, "X-VPS-VIT-Client-Version: 0.01");
     headers = curl_slist_append(headers, "X-VPS-VIT-Client-Architecture: x86");
 
-    sprintf(buffer, "X-VPS-VIT-Client-Certification-Id: %s", this->certificationId.c_str());
-    headers = curl_slist_append(headers, buffer);
+    headers = curl_slist_append(headers, this->certificationId.c_str());
     headers = curl_slist_append(headers, "X-VPS-VIT-Integration-Product: TheIconic Payment Client");
     headers = curl_slist_append(headers, "X-VPS-VIT-Integration-Version: 0.01");
-    sprintf(buffer, "X-VPS-Request-ID: %s", requestIdStr.c_str());
-    headers = curl_slist_append(headers, buffer);
+    headers = curl_slist_append(headers, requestIdStr.c_str());
 
 }

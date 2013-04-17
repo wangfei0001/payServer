@@ -82,10 +82,7 @@ bool thread::isAvailable()
     return available;
 }
 
-void thread::setAvailable(bool available)
-{
-    m_isAvailable = available;
-}
+
 
 bool thread::start(int socketfd)
 {
@@ -141,8 +138,6 @@ void thread::process()
 
         paypal.sendRequest(auth->toString());
 
-
-
         delete auth;
 
 
@@ -155,12 +150,14 @@ void thread::process()
         cout << "recv error detected" << endl;
     }
 
-
+    pthread_mutex_lock( &mutex );
     if(socketfd != -1){
         close(socketfd);
         socketfd = -1;
     }
+
     m_isAvailable = true;
+    pthread_mutex_unlock( &mutex );
 }
 
 
@@ -176,8 +173,6 @@ int thread::parseRequests(char *xml, long size, Authorise *auth)
           cout << "error: could not parse file" << endl;
           return -1;
     }
-
-    cout << "------------------------" << endl;
 
     xmlNode *cur_node = xmlDocGetRootElement(doc);
     if(cur_node == NULL){
@@ -251,11 +246,11 @@ int thread::parseRequests(char *xml, long size, Authorise *auth)
         char expdate[32];
         sprintf(expdate, "%s%s", expmonth.c_str(), expyear.c_str());
         auth->addParam("expdate", expdate);
-    }else{
-        return -1;
+
+        return 0;
     }
 
-    return 0;
+    return -1;
 }
 
 //work function, thread

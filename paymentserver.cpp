@@ -16,6 +16,8 @@
 
 #include <libxml/parser.h>
 
+#include <curl/curl.h>
+
 #include "workerthread.h"
 
 #include "paymentserver.h"
@@ -25,10 +27,75 @@
 
 using namespace std;
 
+
+
+
+static pthread_mutex_t *lockarray;
+
+
+#include <openssl/crypto.h>
+
+static void lock_callback(int mode, int type, const char *file, int line)
+{
+  (void)file;
+  (void)line;
+  if (mode & CRYPTO_LOCK) {
+    pthread_mutex_lock(&(lockarray[type]));
+  }
+  else {
+    pthread_mutex_unlock(&(lockarray[type]));
+  }
+}
+
+static unsigned long thread_id(void)
+{
+  unsigned long ret;
+
+  ret=(unsigned long)pthread_self();
+  return(ret);
+}
+
+static void init_locks(void)
+{
+  int i;
+
+  lockarray=(pthread_mutex_t *)OPENSSL_malloc(CRYPTO_num_locks() *
+                                            sizeof(pthread_mutex_t));
+  for (i=0; i<CRYPTO_num_locks(); i++) {
+    pthread_mutex_init(&(lockarray[i]),NULL);
+  }
+
+  CRYPTO_set_id_callback((unsigned long (*)())thread_id);
+  CRYPTO_set_locking_callback(lock_callback);
+}
+
+static void kill_locks(void)
+{
+  int i;
+
+  CRYPTO_set_locking_callback(NULL);
+  for (i=0; i<CRYPTO_num_locks(); i++)
+    pthread_mutex_destroy(&(lockarray[i]));
+
+  OPENSSL_free(lockarray);
+}
+
+
+
+
+
+
+
+
+
 rqueue *request_queue = new rqueue();
 
 PaymentServer::PaymentServer()
 {
+    curl_global_init(CURL_GLOBAL_ALL);
+
+    init_locks();
+
     pool = new ThreadPool();
 
     cout << "We have created " << pool->getThreadsCount() << " threads!" << endl;
@@ -39,6 +106,8 @@ PaymentServer::~PaymentServer()
 {
 
     delete pool;
+
+    kill_locks();
 
     cout << "Delete threads pool!" << endl;
 }
@@ -86,9 +155,9 @@ void PaymentServer::start()
 
     //lisging socket
     socketfd = this->createListeningSocket();
-    if(!socketfd){
+    if(socketfd < 0){
         //thread exception, error handle
-
+        exit(0);
     }
 
 
@@ -157,23 +226,25 @@ int PaymentServer::createListeningSocket()
     host_info_list.ai_protocol);
     if (socketfd == -1){
         std::cout << "create listening socket error code:" << strerror(errno) << endl;
-        return 0;
+        return -1;
     }
 
     struct sockaddr_in serv_addr;
     memset(&serv_addr, 0, sizeof serv_addr);
 
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(6666);
+    serv_addr.sin_port = htons(7703);
     serv_addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0){
         std::cout << "ERROR on binding" << endl;
-        return 0;
+        close(socketfd);
+        return -1;
     }
     if(listen(socketfd, 64) < 0){
         cout << "listen error" << endl;
-        return 0;
+        close(socketfd);
+        return -1;
     }
 
     cout << "@@@@@Start to listen the clients' requests!@@@@@" << endl;

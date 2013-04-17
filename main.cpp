@@ -88,6 +88,8 @@ int main()
 
     cout << "Goodbye guys." << endl;
 
+    delete server;
+
 #endif
 
     return 0;

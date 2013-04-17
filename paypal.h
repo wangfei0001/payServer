@@ -16,7 +16,7 @@ class Paypal
 public:
     Paypal();
 
-    void test();
+//    void test();
 
     Response *sendRequest(string param);
 protected:
