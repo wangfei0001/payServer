@@ -178,6 +178,7 @@ void PaymentServer::start()
 //           printf("A client has connected %d\n", connectfd);
 
            thread *p_thread = pool->getSpareThread();
+           //cout << "->" << param.c_str() << endl;
 
            if(p_thread){
 //               cout << "find a spare thread:" << p_thread << " index:" << p_thread->id << endl;
@@ -233,7 +234,7 @@ int PaymentServer::createListeningSocket()
     memset(&serv_addr, 0, sizeof serv_addr);
 
     serv_addr.sin_family = AF_INET;
-    serv_addr.sin_port = htons(7703);
+    serv_addr.sin_port = htons(7701);
     serv_addr.sin_addr.s_addr = INADDR_ANY;
 
     if (bind(socketfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0){

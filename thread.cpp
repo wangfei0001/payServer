@@ -14,6 +14,8 @@
 
 #include "paypal.h"
 
+#include "red.h"
+
 #include "rqueue.h"
 
 
@@ -129,21 +131,32 @@ void thread::process()
 
         //start to parse the xml request;
 
-        Authorise *auth = new Authorise;
+        Authorise auth;
 
-        this->parseRequests(buffer, length, auth);
+
+        RedParam redRequest;
+
+        this->parseRequests(buffer, length, &auth, &redRequest);
+
+        //create thread for red client
+
+
+        if(pthread_create(&m_pRedThread, NULL, &red_callback, &redRequest) != 0){
+            cout << "Create thread error code " << errno << endl;
+        }
 
 
         Paypal paypal;
 
-        paypal.sendRequest(auth->toString());
-
-        delete auth;
+        paypal.sendRequest(auth.toString());
 
 
-       sprintf(buffer, "ok");
+        pthread_join(m_pRedThread, NULL);
 
-       send(socketfd, buffer, 3, 0);
+
+        sprintf(buffer, "ok");
+
+        send(socketfd, buffer, 3, 0);
 
     }else{
         cout << errno << endl;
@@ -164,7 +177,7 @@ void thread::process()
 /**
   * Parse xml request, generate the paypal request and red request
   */
-int thread::parseRequests(char *xml, long size, Authorise *auth)
+int thread::parseRequests(char *xml, long size, Authorise *auth, RedParam *red)
 {
     cout << xml << endl;
 
@@ -253,6 +266,20 @@ int thread::parseRequests(char *xml, long size, Authorise *auth)
     return -1;
 }
 
+
+void *thread::red_callback(void *obj)
+{
+    cout << "send request to red" << endl;
+
+    RedParam *param = (RedParam *)obj;
+
+    ReD red;
+
+    red.sendRequest(param->toString());
+
+    return (void *)0;
+}
+
 //work function, thread
 
 void *thread::callback(void *obj)
@@ -268,28 +295,26 @@ void *thread::callback(void *obj)
 
         pthread_mutex_unlock( &p->mutex );
 
+        timeval t1, t2;
+        double elapsedTime;
+
+        // start timer
+        gettimeofday(&t1, NULL);
+
+
 //        cout << "!thread start>" << endl;
 
         p->process();
 
+        // stop timer
+        gettimeofday(&t2, NULL);
 
-//        while(!request_queue->isEmpty()){
-//            request_node node = request_queue->getAndRemoveRequestNode();
+        //print time inteval
+        elapsedTime = (t2.tv_sec - t1.tv_sec) * 1000.0;      // sec to ms
+        elapsedTime += (t2.tv_usec - t1.tv_usec) / 1000.0;   // us to ms
 
-//            pthread_mutex_lock( &p->mutex );
-
-//            p->setAvailable(false);
-
-//            p->socketfd = node.socketfd;
-
-//            pthread_mutex_unlock( &p->mutex );
-
-//            p->process();
-
-//            cout << request_queue->count() << " left" << endl;
-
-//            break;
-//        }
+        cout << "---------------------------" << endl;
+        cout << "proccessing time:" << elapsedTime << " ms.\n";
 
 
         usleep(1);

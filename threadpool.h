@@ -5,7 +5,7 @@
 
 #include "thread.h"
 
-#define DEFAULT_THREAD_COUNT 200
+#define DEFAULT_THREAD_COUNT 50
 
 class ThreadPool
 {

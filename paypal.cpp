@@ -119,13 +119,11 @@ Response *Paypal::sendRequest(string param)
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
         curl_easy_setopt(curl, CURLOPT_DNS_USE_GLOBAL_CACHE, 0);
         curl_easy_setopt(curl, CURLOPT_NOSIGNAL, 1);
-        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
+//        curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
 
         res = curl_easy_perform(curl);
 
         if(CURLE_OK == res) {
-
-            cout << "->" << param.c_str() << endl;
             cout << "<-" << readBuffer << endl;
         }else{
 
