@@ -133,7 +133,6 @@ void thread::process()
 
         Authorise auth;
 
-
         RedParam redRequest;
 
         this->parseRequests(buffer, length, &auth, &redRequest);
@@ -179,7 +178,7 @@ void thread::process()
   */
 int thread::parseRequests(char *xml, long size, Authorise *auth, RedParam *red)
 {
-    cout << xml << endl;
+//    cout << xml << endl;
 
     xmlDoc *doc = xmlReadMemory(xml,size,"",NULL,0);
     if (doc == NULL){
@@ -288,11 +287,9 @@ void *thread::callback(void *obj)
 
     while(!p->m_stop){
         pthread_mutex_lock( &p->mutex );
-
         while(p->socketfd == -1){
             pthread_cond_wait (&p->cond, &p->mutex);
         }
-
         pthread_mutex_unlock( &p->mutex );
 
         timeval t1, t2;

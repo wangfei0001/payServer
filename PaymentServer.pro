@@ -16,7 +16,7 @@ SOURCES += main.cpp \
     workerthread.cpp \
     data/redparam.cpp \
     data/paypalparam.cpp \
-    red.cpp
+    red.cpp \
 
 HEADERS += \
     threadpool.h \
@@ -36,7 +36,7 @@ HEADERS += \
     workerthread.h \
     data/redparam.h \
     data/paypalparam.h \
-    red.h
+    red.h \
 
 INCLUDEPATH = /usr/include/libxml2
 
