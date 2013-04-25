@@ -6,7 +6,7 @@
 
 #define EBT_NAME "000243000001"
 
-#define EBT_SERVICE "I"
+#define EBT_SERVICE "N"
 
 #define USER_ID "ICONIC"
 

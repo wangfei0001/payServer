@@ -1,12 +1,12 @@
 #include "paypalparam.h"
 
-#define PAYPAL_USER "TheIconicTest"
+#define PAYPAL_USER "#"
 
-#define PAYPAL_PASSWORD "Rocket1"
+#define PAYPAL_PASSWORD "#"
 
-#define PAYPAL_MERCHANT "TheIconicTest"
+#define PAYPAL_MERCHANT "#"
 
-#define PAYPAL_PARTNER "VSA"
+#define PAYPAL_PARTNER "#"
 
 PaypalParam::PaypalParam()
 {
